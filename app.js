@@ -9,7 +9,6 @@ app.use(fileupload());
 const port = '10101'
 
 let to = require("./tools/to");
-const { resolve } = require("path");
 
 // Validar si la ruta nos lleva a un directorio
 const validatePath = (pathDirectory) => {
@@ -114,22 +113,32 @@ const createDirectory = (pathDirectory, name) => {
 }
 
 
-createDirectory('.', 'jjuan111')
-    .then( res => console.log(res) )
-    .catch( err => console.log(err) );
+// createDirectory('.', 'jjuan111')
+//     .then( res => console.log(res) )
+//     .catch( err => console.log(err) );
 
-
-const deleteDirectory = (pathDirectory) => {
-    fs.promises.rmdir(path.resolve(pathDirectory), { recursive: true })
-    .then(() => {
-        console.log(`${path.resolve(pathDirectory)} folder removed`);
-    })
-    .catch(err => {
-        console.error(`Something wrong happened removing ${path.resolve(pathDirectory)} folder`, err)
-    })
+const createFile = (pathFile, nameFile, contentFile) => {
+    const pathName = path.resolve(path.join(pathFile, nameFile));
+    console.log(pathName);
+    fs.writeFile(pathName, contentFile, function (err) {
+        if (err) throw err;
+        console.log('Saved!');
+      }); 
 }
 
-
+const deleteDirectory = (pathDirectory) => {
+    if(!fs.existsSync(pathDirectory))
+        return 'The directory does not exist';
+    
+    return new Promise((resolve, reject) => {
+        fs.rm(path.resolve(pathDirectory), { recursive: true }, (err) => {
+            if(err) {
+                return reject(`Something wrong happened removing ${path.resolve(pathDirectory)} folder`, err)
+            }
+            return resolve(`${path.resolve(pathDirectory)} folder removed`);
+        })        
+    })
+}
 
 
 
@@ -145,10 +154,18 @@ app.get('/:path?', async (req, res) => {
     if(errorContent) {
         return res.status(500).send(err);
     }
-    res.send({ path: directory, content })
+    res.status(200).send({ path: directory, content })
 })
 
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 })
+
+module.exports = { 
+    app, 
+    server,
+    createDirectory,
+    deleteDirectory,
+    createFile
+}
