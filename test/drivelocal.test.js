@@ -3,42 +3,77 @@ const { app, server, createDirectory, deleteDirectory, createFile } = require(".
 const api = supertest(app);
 
 const testDirectory = 'testDir'; 
+const testFile = 'testFile.txt'
+const directories = [ 'dir_1', 'dir_2', 'dir_3' ];
+const numberFiles = 6;
 
 beforeEach( async () => {
     // Eliminar directorio testDir
     await deleteDirectory(testDirectory);
     // Crear directorio testDir
-    await createDirectory('.', testDirectory);
+    await createDirectory(testDirectory);
     // Crear directorios dentro de testDir
-    const directories = [ 'dir_1', 'dir_2', 'dir_3' ];
-    for(const dir of directories) {
-        await createDirectory(`./${testDirectory}`, dir);
+    for(const dirName of directories) {
+        await createDirectory(dirName, testDirectory);
     }
 
-    const numberFiles = 6;
     for(let i = 0; i < numberFiles; i++) {
         createFile(
-            `${testDirectory}/dir_2/`, 
             `file_${i}.txt`, 
-            `Estoy en el archivo numero ${i}`
+            `Estoy en el archivo numero ${i}`,
+            `${testDirectory}/${directories[1]}` 
         )
     }
 
+    createFile(testFile);
+
 })
 
+describe('List path content', () => {
+    
+    test('List the contents of the testDir directory', async () => {
+        const response = await api.get("/testDir")
+            .expect(200);
+        const content = response.body.content;
+        // Comprobar si se crean los directorios dentro de testDir
+        expect(Object.keys(content)).toHaveLength(directories.length);
+        // Comprobar si se crean los archivos dentro de dir_2
+        expect(Object.keys(content.dir_2)).toHaveLength(numberFiles);
+    })
 
-test('List contents of directory testDir', async () => {
-    const response = await api.get("/testDir")
-        .expect(200);
-    const content = response.body.content;
+    test('List the content of nonexistent directory', async () => {
+        const response = await api.get("/false")
+            .expect(400);
+        const content = response.body.message;
+        // Comprobar el error de "El directorio no existe"
+        expect(content.error).toBe('The directory does not exist');
+    })
 
-        expect(Object.keys(content)).toHaveLength(3);
-        expect(Object.keys(content.dir_2)).toHaveLength(6);
+    test('List file content', async () => {
+        const response = await api.get(`/${testFile}`)
+            .expect(400);
+        const content = response.body.message;
+        // Comprobar el error de "El directorio no existe"
+        expect(content.error).toBe('Only directories are supported');
+    })
 
-
+    test('List basepath content', async () => {
+        const response = await api.get("/")
+            .expect(200);
+        const content = response.body.content;
+        // Listar contenido de ruta base: 
+        // /home/juanerq/Documentos/Proyectos/GoogleDriveCasero
+        expect(Object.keys(content)).toHaveLength(Object.keys(content).length);
+    })
+    
 })
 
 // Ejecuta una acción al terminar TODOS los test
-afterAll(() => {
+afterAll( async () => {
+    // Eliminar directorio testDir
+    await deleteDirectory(testDirectory);
+    // Eliminar file.txt
+    await deleteDirectory(testFile);
+
     server.close();
 })

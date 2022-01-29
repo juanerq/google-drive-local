@@ -161,7 +161,7 @@
     "yallist": "^4.0.0"
   },
   "scripts": {
-    "test": "NODE_ENV=test jest --verbose --silent",
+    "test": "NODE_ENV=test jest --verbose",
     "test:watch": "npm run test -- --watch"
   },
   "keywords": [],
