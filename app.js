@@ -2,28 +2,19 @@ const express = require("express");
 const fileupload = require("express-fileupload");
 const path = require('path');
 const fs = require("fs");
+require('dotenv').config({path: './.env'})
+
+const to = require("./tools/to");
+const createDirectory = require("./tools/createdir");
+const validatePath = require("./tools/validatepath");
+const convertPort = require("./tools/convertport");
 
 const app = express();
-
 app.use(fileupload());
-const port = '10101'
 
-let to = require("./tools/to");
+const basepath = process.env.BASEPATH || __dirname;
+const port = process.env.PORT || 3000;
 
-const basepath = path.resolve();
-
-// Validar si la ruta nos lleva a un directorio
-const validatePath = (pathDirectory) => {
-    return new Promise((resolve, reject) => {
-        if(!fs.existsSync(pathDirectory)) 
-            return reject({error: 'The directory does not exist', path: pathDirectory});
-
-        if(!fs.lstatSync(pathDirectory).isDirectory()) 
-            return reject({error: 'Only directories are supported', path: pathDirectory});
-        
-        resolve(pathDirectory);
-    })
-}
 
 const moveFile = (file, storePath) => {
     const files = (!file.length) ? [file] : file;
@@ -51,7 +42,7 @@ app.post('/:path?', async (req, res) => {
     // Validar si existe un directorio donde guardar el archivo
     const [ error, directory ] = await to(validatePath(pathSent));
     if(error) {
-        return res.status(400).send({path: path.resolve(pathSent), message: error})
+        return res.status(400).send(error)
     }
    
     const [ errorMoveFile, result ] = await to(moveFile(imageFile.file, path.resolve(directory)));
@@ -59,6 +50,18 @@ app.post('/:path?', async (req, res) => {
     res.send({ message: "Files received" });
         
 });
+
+
+app.put('/:path/:namedir?', async (req, res) => {
+    const { path: pathDirectory, namedir } = req.params;
+    let restype = req.query.restype;
+      
+    const [error, result] = await to(createDirectory(namedir, pathDirectory));
+    if(error) 
+        return res.status(400).send(error)
+
+    return res.status(200).send(result)
+})
 
 const contentFiles = (pathDirectory) => {
     let content = {};
@@ -83,45 +86,9 @@ const contentFiles = (pathDirectory) => {
 
 
 
-const createDirectory = (name, pathDirectory) => {
-    let pathComplete = (pathDirectory) ? 
-        path.join(basepath, pathDirectory.replace('-','/')) : basepath;
-    // Validar si el directorio existe o la ruta esta mal
-    return new Promise( async (result,  reject) => {
-        
-        const [ error, directory ] = await to(validatePath(pathComplete));
-        if(error) {
-            return reject(error);
-        }
-        pathComplete = path.join(directory, name)
-        // Se crea el direcotrio
-        // fs.mkdirSync(path.resolve(pathDirectory, name));
-        fs.promises.mkdir(pathComplete)
-        .then(() => {
-            //Se comprueba si ha sido creado
-            let existDir = fs.existsSync(pathComplete);
-            if(!existDir) { 
-                reject({error: '¡Not found!', message: `Checking for director ${pathComplete}`}); 
-            }
-            result({ message: 'Directory created successfully', path: pathComplete });
-        })
-        .catch(err => {
-            if(err.code == 'EEXIST') {
-                reject({error: 'The directory already exists', path: pathComplete}); 
-            }
-        })
-    })
-}
-
-
-// createDirectory('.', 'jjuan111')
-//     .then( res => console.log(res) )
-//     .catch( err => console.log(err) );
 
 const createFile = (nameFile, contentFile, pathFile) => {
-
     const pathName = path.join(basepath, pathFile || '', nameFile);
-
     
     fs.writeFile(pathName, contentFile || '', (err) => {
         if (err) throw err;
@@ -134,9 +101,9 @@ const deleteDirectory = (pathDirectory) => {
     
     return new Promise((resolve, reject) => {
         fs.rm(path.join(basepath, pathDirectory), { recursive: true }, (err) => {
-            if(err) {
+            if(err) 
                 return reject(`Something wrong happened removing ${path.join(basepath, pathDirectory)} folder`, err)
-            }
+            
             return resolve(`Folder removed ${path.join(basepath, pathDirectory)}`);
         })        
     })
@@ -147,8 +114,7 @@ const deleteDirectory = (pathDirectory) => {
 app.get('/:path?', async (req, res) => {
     let pathSent = req.params.path;
 
-    let pathComplete = (pathSent) ? 
-        path.join(basepath, pathSent.replace('-','/')) : basepath;
+    const pathComplete = convertPort(pathSent);
     
     // Validar si el directorio existe o la ruta esta mal
     const [ error, directory ] = await to(validatePath(pathComplete));
@@ -171,7 +137,8 @@ const server = app.listen(port, () => {
 module.exports = { 
     app, 
     server,
-    createDirectory,
     deleteDirectory,
-    createFile
+    createFile,
+    basepath,
+    validatePath
 }
