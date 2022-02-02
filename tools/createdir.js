@@ -3,10 +3,9 @@ const path = require('path');
 const fs = require("fs");
 
 const validatePath = require("./validatepath");
-const convertPort = require("./convertport");
+const convertPort = require("./convertpath");
 
 const createDirectory = (name, pathDirectory) => {
-
     let pathComplete = convertPort(pathDirectory);
 
     return new Promise( async (result,  reject) => {

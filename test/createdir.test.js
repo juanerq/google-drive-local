@@ -11,7 +11,7 @@ beforeAll( async () => {
     // Eliminar directorio el archivo testFile.txt
     await deleteDirectory(testFile);
     
-    createFile(testFile);
+    await createFile(testFile);
 
 })
 
@@ -43,9 +43,9 @@ describe('Create directories', () => {
     })
 
     test('Create directory in file', async () => {
-        const response = await api.get(`/${testFile}`)
+        const response = await api.put(`/${testFile}/${testDir}?restype=directory`)
             .expect(400);
-        const content = response.body.message;
+        const content = response.body;
         // Comprobar el error de "Solo se admiten directorios"
         expect(content.error).toBe('Only directories are supported');
     })

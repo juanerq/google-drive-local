@@ -7,7 +7,7 @@ require('dotenv').config({path: './.env'})
 const to = require("./tools/to");
 const createDirectory = require("./tools/createdir");
 const validatePath = require("./tools/validatepath");
-const convertPort = require("./tools/convertport");
+const convertPath = require("./tools/convertpath");
 
 const app = express();
 app.use(fileupload());
@@ -52,15 +52,24 @@ app.post('/:path?', async (req, res) => {
 });
 
 
-app.put('/:path/:namedir?', async (req, res) => {
-    const { path: pathDirectory, namedir } = req.params;
+app.put('/:path/:name?', async (req, res) => {
+    const { path: pathDirectory, name } = req.params;
     let restype = req.query.restype;
-      
-    const [error, result] = await to(createDirectory(namedir, pathDirectory));
-    if(error) 
-        return res.status(400).send(error)
 
-    return res.status(200).send(result)
+    if(restype == 'directory') {
+        const [error, result] = await to(createDirectory(name, pathDirectory));
+        if(error) 
+            return res.status(400).send(error)
+        return res.status(200).send(result)
+    } else if(restype == 'file') {
+        const [error, result] = await to(createFile(name, '¡¡Hola!!', pathDirectory));
+        if(error) 
+            return res.status(400).send(error)
+        return res.status(200).send(result)
+    }
+
+    res.status(400).send({ message: `Wrong retype -> ${restype}` });
+
 })
 
 const contentFiles = (pathDirectory) => {
@@ -88,12 +97,26 @@ const contentFiles = (pathDirectory) => {
 
 
 const createFile = (nameFile, contentFile, pathFile) => {
-    const pathName = path.join(basepath, pathFile || '', nameFile);
+    const pathComplete = convertPath(pathFile);
     
-    fs.writeFile(pathName, contentFile || '', (err) => {
-        if (err) throw err;
-      }); 
+    return new Promise( async (resolve, reject) => {
+        const [ error, directory ] = await to(validatePath(pathComplete));
+        if(error) {
+            return reject(error);
+        }
+        const pathName = path.join(directory, nameFile);
+
+        if(fs.existsSync(pathName))
+            return reject({message: 'The file already exists', path: pathName}); 
+
+        fs.writeFile(pathName, contentFile || '', (err) => {
+            if (err) 
+                return reject({message: error, path: pathComplete}); 
+            resolve({message: 'File created successfully', path: pathName})
+        }); 
+    })
 }
+
 
 const deleteDirectory = (pathDirectory) => {
     if(!fs.existsSync(path.join(basepath, pathDirectory)))
@@ -114,7 +137,7 @@ const deleteDirectory = (pathDirectory) => {
 app.get('/:path?', async (req, res) => {
     let pathSent = req.params.path;
 
-    const pathComplete = convertPort(pathSent);
+    const pathComplete = convertPath(pathSent);
     
     // Validar si el directorio existe o la ruta esta mal
     const [ error, directory ] = await to(validatePath(pathComplete));

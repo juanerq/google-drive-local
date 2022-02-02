@@ -9,9 +9,11 @@ const testFile = 'testFile.txt'
 const directories = [ 'dir_1', 'dir_2', 'dir_3' ];
 const numberFiles = 6;
 
-beforeEach( async () => {
+beforeAll( async () => {
     // Eliminar directorio testDir
     await deleteDirectory(testDirectory);
+    // Eliminar archivo testFile
+    await deleteDirectory(testFile);
     // Crear directorio testDir
     await createDirectory(testDirectory, basepath);
     // Crear directorios dentro de testDir
@@ -69,6 +71,7 @@ describe('List path content', () => {
     })
     
 })
+
 
 // Ejecuta una acción al terminar TODOS los test
 afterAll( async () => {
