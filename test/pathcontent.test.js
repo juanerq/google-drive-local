@@ -35,7 +35,7 @@ beforeAll( async () => {
 
 describe('List path content', () => {
     
-    test('List the contents of the testDir directory', async () => {
+    test('Should list the contents of the testDir directory', async () => {
         const response = await api.get("/testDir")
             .expect(200);
         const content = response.body.content;
@@ -45,7 +45,7 @@ describe('List path content', () => {
         expect(Object.keys(content.dir_2)).toHaveLength(numberFiles);
     })
     
-    test('List basepath content', async () => {
+    test('Should list basepath content', async () => {
         const response = await api.get("/")
             .expect(200);
         const content = response.body.content;
@@ -54,7 +54,7 @@ describe('List path content', () => {
         expect(Object.keys(content)).toHaveLength(Object.keys(content).length);
     })
 
-    test('List the contents of a directory that does not exist', async () => {
+    test('Should not list the contents of a directory that does not exist', async () => {
         const response = await api.get("/false")
             .expect(400);
         const content = response.body.message;
@@ -62,7 +62,7 @@ describe('List path content', () => {
         expect(content.error).toBe('The directory does not exist');
     })
 
-    test('List file content', async () => {
+    test('Should not list a file content', async () => {
         const response = await api.get(`/${testFile}`)
             .expect(400);
         const content = response.body.message;

@@ -102,6 +102,7 @@
     "minimatch": "^3.0.4",
     "minimist": "^1.2.5",
     "ms": "^2.0.0",
+    "mz": "^2.7.0",
     "negotiator": "^0.6.2",
     "nopt": "^1.0.10",
     "normalize-path": "^3.0.0",
@@ -162,7 +163,7 @@
     "yallist": "^4.0.0"
   },
   "scripts": {
-    "test": "NODE_ENV=test jest --verbose /test/createfile.test.js",
+    "test": "NODE_ENV=test jest --verbose /test/uploadfile.test.js",
     "test:watch": "npm run test -- --watch"
   },
   "keywords": [],

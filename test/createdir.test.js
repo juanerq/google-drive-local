@@ -31,7 +31,6 @@ describe('Create directories', () => {
         const content = response.body;
 
         expect(content.error).toBe('The directory already exists')
-
     })
 
     test('Create directory on invalid path', async () => {

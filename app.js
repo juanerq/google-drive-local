@@ -2,6 +2,8 @@ const express = require("express");
 const fileupload = require("express-fileupload");
 const path = require('path');
 const fs = require("fs");
+const mz = require("mz/fs");
+
 require('dotenv').config({path: './.env'})
 
 const to = require("./tools/to");
@@ -16,39 +18,57 @@ const basepath = process.env.BASEPATH || __dirname;
 const port = process.env.PORT || 3000;
 
 
-const moveFile = (file, storePath) => {
+const uploadFile = (file, storePath) => {
     const files = (!file.length) ? [file] : file;
+    const existingFiles = [];
+    const newFiles = [], nameNewFiles = [];
 
-    return new Promise((resolve, reject) => {
-        files.forEach( f => {
+    return new Promise( async (resolve, reject) => {
+
+        for(const file of files) {
+            await mz.exists(`${storePath}/${file.name}`).then( exists => {
+                if (exists) {
+                    existingFiles.push(file.name);
+                } else {
+                    newFiles.push(file);
+                    nameNewFiles.push(file.name);
+                }
+            })  
+        }
+        if (existingFiles.length == files.length) 
+            return reject({message: 'The file already exists', existing: existingFiles}); 
+        
+        newFiles.forEach( f => {            
             f.mv(`${storePath}/${f.name}`, (err) => {
                 if(err) return reject(err);
             })
         })
-        resolve(file.name);
+        resolve({ message: "Files received", uploaded: nameNewFiles, existing: existingFiles } );
     })
 }
 
 // Subir archivos
 app.post('/:path?', async (req, res) => {
-    let imageFile = req.files;
+    let files = req.files;
     let pathSent = req.params.path;
 
+    const pathComplete = convertPath(pathSent);
     // Validar si ha cargado un archivo
-    if(!imageFile || Object.keys(imageFile).length == 0) {
+    if(!files || Object.keys(files).length == 0) {
         return res.status(400).send({ message: "No files uploaded" });
     }
 
     // Validar si existe un directorio donde guardar el archivo
-    const [ error, directory ] = await to(validatePath(pathSent));
+    const [ error, directory ] = await to(validatePath(pathComplete));
     if(error) {
         return res.status(400).send(error)
-    }
-   
-    const [ errorMoveFile, result ] = await to(moveFile(imageFile.file, path.resolve(directory)));
-    if(errorMoveFile) return res.status(500).send(errorMoveFile);
-    res.send({ message: "Files received" });
-        
+    } 
+ 
+    const [ erroruploadFile, result ] = await to(uploadFile(files.file, directory));
+    if(erroruploadFile) 
+        return res.status(500).send(erroruploadFile);
+
+    res.status(200).send(result);
 });
 
 
@@ -93,21 +113,20 @@ const contentFiles = (pathDirectory) => {
     }) 
 }
 
-
-
-
 const createFile = (nameFile, contentFile, pathFile) => {
     const pathComplete = convertPath(pathFile);
     
     return new Promise( async (resolve, reject) => {
         const [ error, directory ] = await to(validatePath(pathComplete));
-        if(error) {
+        if (error) {
             return reject(error);
         }
         const pathName = path.join(directory, nameFile);
 
-        if(fs.existsSync(pathName))
-            return reject({message: 'The file already exists', path: pathName}); 
+        await mz.exists(pathName).then((exists) => {
+            if (exists) 
+                return reject({message: 'The file already exists', path: pathName}); 
+        })    
 
         fs.writeFile(pathName, contentFile || '', (err) => {
             if (err) 
@@ -119,15 +138,19 @@ const createFile = (nameFile, contentFile, pathFile) => {
 
 
 const deleteDirectory = (pathDirectory) => {
-    if(!fs.existsSync(path.join(basepath, pathDirectory)))
-        return 'The directory does not exist';
+    const pathComplete = path.join(basepath, pathDirectory);
     
-    return new Promise((resolve, reject) => {
-        fs.rm(path.join(basepath, pathDirectory), { recursive: true }, (err) => {
+    return new Promise( async (resolve, reject) => {
+        await mz.exists(pathComplete).then( (exists) => {
+            if (!exists) 
+                return resolve({message: 'The directory does not exist', path: pathComplete}); 
+        })    
+
+        fs.rm(pathComplete, { recursive: true }, (err) => {
             if(err) 
-                return reject(`Something wrong happened removing ${path.join(basepath, pathDirectory)} folder`, err)
+                return reject(`Something wrong happened removing ${pathComplete} folder`, err)
             
-            return resolve(`Folder removed ${path.join(basepath, pathDirectory)}`);
+            return resolve(`Folder removed ${pathComplete}`);
         })        
     })
 }
