@@ -17,7 +17,7 @@ beforeAll( async () => {
 
 describe('Create directories', () => {
 
-    test('Create directory', async () => {
+    test('Should create a directory', async () => {
         const response = await api.put(`/./${testDir}?restype=directory`)
             .expect(200)
         const content = response.body;
@@ -25,7 +25,7 @@ describe('Create directories', () => {
         expect(content.message).toBe('Directory created successfully')
     })
 
-    test('Create directory that already exists', async () => {
+    test('Should not create directory that already exists', async () => {
         const response = await api.put(`/./${testDir}?restype=directory`)
             .expect(400)
         const content = response.body;
@@ -33,7 +33,7 @@ describe('Create directories', () => {
         expect(content.error).toBe('The directory already exists')
     })
 
-    test('Create directory on invalid path', async () => {
+    test('Should not create directory to an invalid path.', async () => {
         const response = await api.put(`/false/${testDir}?restype=directory`)
             .expect(400);
         const content = response.body;
@@ -41,7 +41,7 @@ describe('Create directories', () => {
         expect(content.error).toBe('The directory does not exist');
     })
 
-    test('Create directory in file', async () => {
+    test('Should not create directory to a file path', async () => {
         const response = await api.put(`/${testFile}/${testDir}?restype=directory`)
             .expect(400);
         const content = response.body;

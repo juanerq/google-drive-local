@@ -18,32 +18,44 @@ const basepath = process.env.BASEPATH || __dirname;
 const port = process.env.PORT || 3000;
 
 
-const uploadFile = (file, storePath) => {
-    const files = (!file.length) ? [file] : file;
-    const existingFiles = [];
-    const newFiles = [], nameNewFiles = [];
+const seekExistence = (path, files) => {
+    const exists = { files: [], names: [] };
+    const newFiles = { files: [], names: [] };
 
     return new Promise( async (resolve, reject) => {
-
         for(const file of files) {
-            await mz.exists(`${storePath}/${file.name}`).then( exists => {
-                if (exists) {
-                    existingFiles.push(file.name);
+            await mz.exists(`${path}/${file.name}`).then( existFile => {
+                if (existFile) {
+                    exists['files'].push(file);
+                    exists['names'].push(file.name);
                 } else {
-                    newFiles.push(file);
-                    nameNewFiles.push(file.name);
+                    newFiles['files'].push(file);
+                    newFiles['names'].push(file.name);
                 }
             })  
         }
-        if (existingFiles.length == files.length) 
-            return reject({message: 'The file already exists', existing: existingFiles}); 
+        if(exists['files'].length == files.length) {
+            return reject({message: 'The file already exists', existing: exists.names})
+        }
+        resolve({ exists, newFiles })
+    })
+}
+
+const uploadFile = (file, storePath) => {
+    const listFiles = (!file.length) ? [file] : file;
+
+    return new Promise( async (resolve, reject) => {
+
+        const [ error, files ] = await to(seekExistence(storePath, listFiles));
+        if (error) 
+            return reject(error); 
         
-        newFiles.forEach( f => {            
+        files.newFiles.files.forEach( f => {            
             f.mv(`${storePath}/${f.name}`, (err) => {
                 if(err) return reject(err);
             })
         })
-        resolve({ message: "Files received", uploaded: nameNewFiles, existing: existingFiles } );
+        resolve({ message: "Files received", uploaded: files.newFiles.names, existing: files.exists.names } );
     })
 }
 
@@ -64,9 +76,9 @@ app.post('/:path?', async (req, res) => {
         return res.status(400).send(error)
     } 
  
-    const [ erroruploadFile, result ] = await to(uploadFile(files.file, directory));
-    if(erroruploadFile) 
-        return res.status(500).send(erroruploadFile);
+    const [ errorUploadFile, result ] = await to(uploadFile(files.file, directory));
+    if(errorUploadFile) 
+        return res.status(400).send(errorUploadFile);
 
     res.status(200).send(result);
 });
