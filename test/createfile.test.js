@@ -1,6 +1,7 @@
 const supertest = require("supertest");
-const { app, server, deleteDirectory, createFile } = require("../app");
+const { app, server } = require("../app");
 const api = supertest(app);
+const deleteDirectory = require("../tools/deletedir");
 
 const testFile = 'testFile.txt'
 

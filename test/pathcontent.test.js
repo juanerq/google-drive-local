@@ -1,8 +1,11 @@
+const { app, server } = require("../app");
+
 const supertest = require("supertest");
-const { app, server, deleteDirectory, createFile, basepath } = require("../app");
 const api = supertest(app);
 
-const createDirectory = require("../tools/createdir");
+const createFile = require("../create/create.controller").createFile;
+const createDirectory = require("../create/create.controller").createDirectory;
+const deleteDirectory = require("../tools/deletedir");
 
 const testDirectory = 'testDir'; 
 const testFile = 'testFile.txt'
@@ -15,7 +18,7 @@ beforeAll( async () => {
     // Eliminar archivo testFile
     await deleteDirectory(testFile);
     // Crear directorio testDir
-    await createDirectory(testDirectory, basepath);
+    await createDirectory(testDirectory);
     // Crear directorios dentro de testDir
     for(const dirName of directories) {
         await createDirectory(dirName, testDirectory);

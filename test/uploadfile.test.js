@@ -1,5 +1,9 @@
 const supertest = require("supertest");
-const { app, server, deleteDirectory, createFile } = require("../app");
+const { app, server } = require("../app");
+
+const createFile = require("../create/create.controller").createFile;
+const deleteDirectory = require("../tools/deletedir");
+
 const api = supertest(app);
 require('dotenv').config({path: '../.env'});
 
