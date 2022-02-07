@@ -163,7 +163,7 @@
     "yallist": "^4.0.0"
   },
   "scripts": {
-    "test": "NODE_ENV=test jest --verbose /test/createdir.test.js",
+    "test": "NODE_ENV=test jest --verbose /test/uploadfile.test.js",
     "test:watch": "npm run test -- --watch"
   },
   "keywords": [],

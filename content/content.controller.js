@@ -2,8 +2,9 @@ const fs = require("fs");
 const path = require("path");
 
 const dirContent = (pathDirectory) => {
-    let content = {};
     return new Promise((resolve, reject) => {
+        let content = {};
+        
         fs.readdir(pathDirectory, (err, files) => {
             if(err) {
                 reject(err)

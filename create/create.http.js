@@ -10,6 +10,7 @@ const createDir = async (req, res) => {
         if(error) 
             return res.status(400).send(error)
         return res.status(200).send(result)
+        
     } else if(restype == 'file') {
         const [error, result] = await to(create.createFile(name, '¡¡Hola!!', pathDirectory));
         if(error) 
