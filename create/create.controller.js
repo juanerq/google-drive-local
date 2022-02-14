@@ -17,12 +17,14 @@ const createDirectory = (name, pathDirectory) => {
         pathComplete = path.join(directory, name)
         // Se crea el direcotrio
         fs.promises.mkdir(pathComplete)
-        .then(() => {
+        .then( async () => {
             //Se comprueba si ha sido creado
-            let existDir = fs.existsSync(pathComplete);
-            if(!existDir) { 
+            // let existDir = fs.existsSync(pathComplete);
+            await mz.exists(pathComplete).then((exists) => {
+                if (!exists) 
                 reject({error: '¡Not found!', message: `Checking for director ${pathComplete}`}); 
-            }
+            })    
+      
             result({ message: 'Directory created successfully', path: pathComplete });
         })
         .catch(err => {

@@ -11,11 +11,13 @@ const dirContent = (pathDirectory) => {
             }
             files.forEach(file => {
                 // Es un directorio o un fichero?
+                
                 if(fs.lstatSync(path.join(pathDirectory, file)).isDirectory()) {
                     let directory = fs.readdirSync(path.join(pathDirectory, file)); 
                     content[file] = directory || [];
                 } else { 
-                    content[file] = file;
+                    const type = file.split(".")[file.split(".").length - 1];
+                    content[file] = { type, file };
                 }
             })
             resolve(content);

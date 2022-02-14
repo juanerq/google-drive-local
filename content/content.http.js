@@ -4,8 +4,7 @@ const content = require("./content.controller");
 const to = require("../tools/to");
 
 const dirContent = async (req, res) => {
-    let pathSent = req.params.path;
-
+    const pathSent = req.params.path;
     const pathComplete = convertPath(pathSent);
     
     // Validar si el directorio existe o la ruta esta mal
@@ -18,7 +17,9 @@ const dirContent = async (req, res) => {
     if(errorContent) {
         return res.status(500).send(err);
     }
-    res.status(200).send({ path: directory, content: dirContent })
+
+    res.status(200).json({ path: directory, content: dirContent });
 }
+
 
 exports.dirContent = dirContent;

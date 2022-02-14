@@ -1,5 +1,9 @@
 node_modules
 
+.vscode
+
 testDir
 
 img
+
+video

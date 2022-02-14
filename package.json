@@ -34,6 +34,7 @@
     "content-type": "^1.0.4",
     "cookie": "^0.4.1",
     "cookie-signature": "^1.0.6",
+    "cors": "^2.8.5",
     "crypto-random-string": "^2.0.0",
     "debug": "^2.6.9",
     "decompress-response": "^3.3.0",
@@ -163,7 +164,8 @@
     "yallist": "^4.0.0"
   },
   "scripts": {
-    "test": "NODE_ENV=test jest --verbose /test/uploadfile.test.js",
+    "start": "nodemon app.js",
+    "test": "NODE_ENV=test jest --verbose /test/pathcontent.test.js",
     "test:watch": "npm run test -- --watch"
   },
   "keywords": [],
