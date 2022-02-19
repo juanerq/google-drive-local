@@ -8,7 +8,7 @@ app.use(express.json(),
         cors());
 
 require('dotenv').config({path: './.env'});
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 10101;
 
 const upload = require("./upload/upload.router").router;
 const create = require("./create/create.router").router;
@@ -21,6 +21,9 @@ app.use('/', upload);
 app.use('/', create);
 app.use('/', content);
 
+app.use((req, res) => {
+    res.status(404).json({ error: 'Not found' })
+})
 
 const server = app.listen(port, () => {
     console.log(`Server running on port ${port}`);

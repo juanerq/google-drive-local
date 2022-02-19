@@ -7,8 +7,12 @@ const watchVideo = async (req, res) => {
     const pathComplete = convertPath(pathSent);
     
     const videoName = req.query.v;
+    if(!videoName) {
+        return res.status(404).json({error: 'Video not found'})
+    }
+    
     const videoPath = path.join(pathComplete, videoName);
-
+    
     const videoSize = fs.statSync(videoPath).size;
     const range = req.headers.range;
 
