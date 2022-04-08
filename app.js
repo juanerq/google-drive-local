@@ -1,3 +1,5 @@
+require('dotenv').config({path: './.env'});
+
 const express = require("express");
 const app = express();
 const cors = require("cors")
@@ -7,7 +9,6 @@ app.use(express.json(),
         fileupload(),
         cors());
 
-require('dotenv').config({path: './.env'});
 const port = process.env.PORT || 10101;
 
 const upload = require("./upload/upload.router").router;
