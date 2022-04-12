@@ -12,11 +12,11 @@ const validatePath = async (pathDirectory) => {
         
         // Si el directorio donde queremos guardar el archivo no existe
         if(notExist[0])
-            throw({error: 'The directory does not exist', path: pathDirectory});
+            throw({msg: 'The directory does not exist', path: pathDirectory});
     
         // Si se intenta guardar un archivo en la ruta de un fichero
         if(!file.isDirectory())
-            throw({error: 'Only directories are supported', path: pathDirectory});
+            throw({msg: 'Only directories are supported', path: pathDirectory});
     
         return(pathDirectory);
     })

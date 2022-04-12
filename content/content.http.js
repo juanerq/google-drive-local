@@ -1,21 +1,13 @@
-const convertPath = require("../tools/convertpath");
-const validatePath = require("../tools/validatepath");
 const content = require("./content.controller");
 const to = require("../tools/to");
 
-const dirContent = async (req, res) => {
-    const pathSent = req.params.path;
-    const pathComplete = convertPath(pathSent);
-    
-    // Validar si el directorio existe o la ruta esta mal
-    const [ error, directory ] = await to(validatePath(pathComplete));
-    if(error) {
-        return res.status(400).send({ message: error })
-    }
+const dirContent = async (req, res, next) => {
+    const directory = req.params.path;
+
     // Mostrar contenido de los directorios
     const [ errorContent, dirContent ] = await to(content.dirContent(directory));
     if(errorContent) {
-        return res.status(500).send(err);
+        return res.status(500).send(errorContent);
     }
 
     res.status(200).json({ path: directory, content: dirContent });

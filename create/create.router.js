@@ -3,6 +3,6 @@ const router = express.Router();
 const createHttpHandler = require("./create.http");
 
 router.route('/:path/:name?')
-    .put(createHttpHandler.createDir);
+    .post(createHttpHandler.createDir);
 
 exports.router = router;

@@ -1,8 +1,8 @@
-const express = require("express");
-const router = express.Router();
-const contentHttpHandler = require("./content.http");
+const router = require("express").Router()
+const contentHttpHandler = require("./content.http")
+const validatePathContent = require('../validators/validatePath')
 
 router.route('/:path?')
-    .get(contentHttpHandler.dirContent);
+    .get(validatePathContent, contentHttpHandler.dirContent)
 
-exports.router = router;
+module.exports = router

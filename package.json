@@ -165,7 +165,7 @@
   },
   "scripts": {
     "start": "nodemon app.js",
-    "test": "NODE_ENV=test jest --verbose /test/createfile.test.js",
+    "test": "NODE_ENV=test jest --verbose --silent /test/pathcontent.test.js",
     "test:watch": "npm run test -- --watch"
   },
   "keywords": [],

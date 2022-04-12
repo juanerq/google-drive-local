@@ -6,6 +6,7 @@ const api = supertest(app);
 const createFile = require("../create/create.controller").createFile;
 const createDirectory = require("../create/create.controller").createDirectory;
 const deleteDirectory = require("../tools/deletedir");
+const { projectContent } = require('./helper')
 
 const testDirectory = 'testDir'; 
 const testFile = 'testFile.txt'
@@ -31,9 +32,8 @@ beforeAll( async () => {
             `${testDirectory}/${directories[1]}` 
         )
     }
-
+    
     createFile(testFile);
-
 })
 
 describe('List path content', () => {
@@ -54,23 +54,25 @@ describe('List path content', () => {
         const content = response.body.content;
         // Listar contenido de ruta base: 
         // /home/juanerq/Documentos/Proyectos/GoogleDriveCasero
-        expect(Object.keys(content)).toHaveLength(Object.keys(content).length);
+        const projCont = projectContent()
+
+        expect(Object.keys(content)).toHaveLength(projCont.length);
     })
 
     test('Should not list the contents of a directory that does not exist', async () => {
         const response = await api.get("/false")
             .expect(400);
-        const content = response.body.message;
+
         // Comprobar el error de "El directorio no existe"
-        expect(content.error).toBe('The directory does not exist');
+        expect(response.body.error).toBe('The directory does not exist');
     })
 
     test('Should not list a file content', async () => {
         const response = await api.get(`/${testFile}`)
             .expect(400);
-        const content = response.body.message;
+
         // Comprobar el error de "Solo se admiten directorios
-        expect(content.error).toBe('Only directories are supported');
+        expect(response.body.error).toBe('Only directories are supported');
     })
     
 })
