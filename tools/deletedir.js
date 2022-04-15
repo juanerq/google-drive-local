@@ -1,22 +1,18 @@
 const fs = require("fs");
 const mz = require("mz/fs");
 
-const convertPath = require("./convertpath");
-
 const deleteDirectory = (pathDirectory) => {
     return new Promise( async (resolve, reject) => {
-        const pathComplete = convertPath(pathDirectory);
+        
+        const exists = await mz.exists(pathDirectory)
+        if (!exists) 
+            return resolve({message: 'The directory does not exist', path: pathDirectory}); 
 
-        await mz.exists(pathComplete).then( (exists) => {
-            if (!exists) 
-                return resolve({message: 'The directory does not exist', path: pathComplete}); 
-        })    
-
-        fs.rm(pathComplete, { recursive: true }, (err) => {
+        fs.rm(pathDirectory, { recursive: true }, (err) => {
             if(err) 
-                return reject(`Something wrong happened removing ${pathComplete} folder`, err);
+                return reject(`Something wrong happened removing ${pathDirectory} folder`, err);
             
-            return resolve(`Folder removed ${pathComplete}`);
+            return resolve(`Folder removed ${pathDirectory}`);
         })        
     })
 }

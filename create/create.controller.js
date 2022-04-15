@@ -1,62 +1,46 @@
-const path = require('path');
-const fs = require("fs");
-const mz = require("mz/fs");
+const path = require('path')
+const fs = require("fs")
+const mz = require("mz/fs")
 
-const to = require("../tools/to");
-const validatePath = require("../tools/validatepath");
-const convertPath = require("../tools/convertpath");
-
-const createDirectory = (name, pathDirectory) => {
-    let pathComplete = convertPath(pathDirectory);
+const createDirectory = (pathDirectory, name) => {
+    const pathComplete = path.join(pathDirectory, name)
 
     return new Promise( async (result,  reject) => {
-        const [ error, directory ] = await to(validatePath(pathComplete));
-        if(error) {
-            return reject(error);
-        }
-        pathComplete = path.join(directory, name)
         // Se crea el direcotrio
         fs.promises.mkdir(pathComplete)
-        .then( async () => {
-            //Se comprueba si ha sido creado
-            // let existDir = fs.existsSync(pathComplete);
-            await mz.exists(pathComplete).then((exists) => {
+            .then( async () => {
+                //Se comprueba si ha sido creado
+                const exists = await mz.exists(pathComplete)
                 if (!exists) 
-                reject({error: '¡Not found!', message: `Checking for director ${pathComplete}`}); 
-            })    
-      
-            result({ message: 'Directory created successfully', path: pathComplete });
-        })
-        .catch(err => {
-            if(err.code == 'EEXIST') {
-                reject({error: 'The directory already exists', path: pathComplete}); 
-            }
-        })
+                    return reject({msg: 'Directory not created', path: pathComplete}) 
+
+                result({ message: 'Directory created successfully', path: pathComplete })
+
+            }).catch(err => {
+                if(err.code == 'EEXIST') {
+                    reject({msg: 'The directory already exists', path: pathComplete}) 
+                }
+            })
     })
 }
 
-const createFile = (nameFile, contentFile, pathFile) => {
-    const pathComplete = convertPath(pathFile);
-    
+const createFile = (pathFile, nameFile, contentFile = '') => {
+    const pathComplete = path.join(pathFile, nameFile)
+  
     return new Promise( async (resolve, reject) => {
-        const [ error, directory ] = await to(validatePath(pathComplete));
-        if (error) {
-            return reject(error);
-        }
-        const pathName = path.join(directory, nameFile);
+        const exists = await mz.exists(pathComplete)
+        if (exists) 
+            return reject({msg: 'The file already exists', path: pathComplete}) 
 
-        await mz.exists(pathName).then((exists) => {
-            if (exists) 
-                return reject({message: 'The file already exists', path: pathName}); 
-        })    
-
-        fs.writeFile(pathName, contentFile || '', (err) => {
+        fs.writeFile(pathComplete, contentFile, (err) => {
             if (err) 
-                return reject({message: error, path: pathComplete}); 
-            resolve({message: 'File created successfully', path: pathName})
-        }); 
+                return reject({msg: error, path: pathComplete}) 
+            resolve({msg: 'File created successfully', path: pathComplete})
+        }) 
     })
 }
 
-exports.createDirectory = createDirectory;
-exports.createFile = createFile;
+module.exports = {
+    createDirectory,
+    createFile
+}

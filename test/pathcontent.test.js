@@ -1,62 +1,48 @@
-const { app, server } = require("../app");
+const { server } = require("../app");
+const { dirTestContent, api, createDirectorys, createFiles } = require('./helper')
 
-const supertest = require("supertest");
-const api = supertest(app);
-
-const createFile = require("../create/create.controller").createFile;
-const createDirectory = require("../create/create.controller").createDirectory;
+const { createDirectory } = require("../create/create.controller");
 const deleteDirectory = require("../tools/deletedir");
-const { projectContent } = require('./helper')
+
+const pathTest = process.env.BASEPATH
 
 const testDirectory = 'testDir'; 
-const testFile = 'testFile.txt'
-const directories = [ 'dir_1', 'dir_2', 'dir_3' ];
-const numberFiles = 6;
+const pathTestDir = `${pathTest}/${testDirectory}/`
+
+const directories = [ 'dir_1', 'dir_2', 'dir_3', 'dir_4' ];
+const files = [ 'file_1.txt', 'file_2.txt', 'file_3.txt', 'file_4.txt' ];
 
 beforeAll( async () => {
-    // Eliminar directorio testDir
-    await deleteDirectory(testDirectory);
-    // Eliminar archivo testFile
-    await deleteDirectory(testFile);
+    await deleteDirectory(`${pathTest}/${testDirectory}`)
     // Crear directorio testDir
-    await createDirectory(testDirectory);
+    await createDirectory(pathTest, testDirectory);
     // Crear directorios dentro de testDir
-    for(const dirName of directories) {
-        await createDirectory(dirName, testDirectory);
-    }
-
-    for(let i = 0; i < numberFiles; i++) {
-        createFile(
-            `file_${i}.txt`, 
-            `Estoy en el archivo numero ${i}`,
-            `${testDirectory}/${directories[1]}` 
-        )
-    }
-    
-    createFile(testFile);
+    await createDirectorys(pathTestDir, directories)
+    // Crear archivos dentro de testDir
+    await createFiles(pathTestDir + directories[1], files)
 })
 
 describe('List path content', () => {
     
     test('Should list the contents of the testDir directory', async () => {
-        const response = await api.get("/testDir")
+        const response = await api.get(`/${testDirectory}`)
             .expect(200);
         const content = response.body.content;
         // Comprobar si se crean los directorios dentro de testDir
-        expect(Object.keys(content)).toHaveLength(directories.length);
+        expect(Object.keys(content)).toEqual(directories);
         // Comprobar si se crean los archivos dentro de dir_2
-        expect(Object.keys(content.dir_2)).toHaveLength(numberFiles);
+        expect(content[directories[1]]).toEqual(files);
     })
     
-    test('Should list basepath content', async () => {
+    test('Should list basepath test content', async () => {
         const response = await api.get("/")
             .expect(200);
         const content = response.body.content;
         // Listar contenido de ruta base: 
-        // /home/juanerq/Documentos/Proyectos/GoogleDriveCasero
-        const projCont = projectContent()
+        // /home/juanerq/Documentos/Proyectos/GoogleDriveCasero/test
+        const dirTest = dirTestContent()
 
-        expect(Object.keys(content)).toHaveLength(projCont.length);
+        expect(Object.keys(content)).toHaveLength(dirTest.length);
     })
 
     test('Should not list the contents of a directory that does not exist', async () => {
@@ -68,8 +54,9 @@ describe('List path content', () => {
     })
 
     test('Should not list a file content', async () => {
-        const response = await api.get(`/${testFile}`)
-            .expect(400);
+        const pathFile = `${testDirectory}-${directories[1]}-${files[0]}`
+        const response = await api.get(`/${pathFile}`)
+            .expect(400)
 
         // Comprobar el error de "Solo se admiten directorios
         expect(response.body.error).toBe('Only directories are supported');
@@ -80,10 +67,7 @@ describe('List path content', () => {
 
 // Ejecuta una acción al terminar TODOS los test
 afterAll( async () => {
-    // // Eliminar directorio testDir
-    await deleteDirectory(testDirectory);
-    // Eliminar file.txt
-    await deleteDirectory(testFile);
-
+    //Eliminar directorio testDir
+    await deleteDirectory(`${pathTest}/${testDirectory}`)
     server.close();
 })
