@@ -6,16 +6,16 @@ const deleteDirectory = require("../tools/deletedir");
 
 const pathTest = process.env.BASEPATH
 
-const testDirectory = 'testDir'; 
-const pathTestDir = `${pathTest}/${testDirectory}/`
+const testDir = 'testPath'; 
+const pathTestDir = `${pathTest}/${testDir}/`
 
 const directories = [ 'dir_1', 'dir_2', 'dir_3', 'dir_4' ];
 const files = [ 'file_1.txt', 'file_2.txt', 'file_3.txt', 'file_4.txt' ];
 
 beforeAll( async () => {
-    await deleteDirectory(`${pathTest}/${testDirectory}`)
+    await deleteDirectory(`${pathTest}/${testDir}`)
     // Crear directorio testDir
-    await createDirectory(pathTest, testDirectory);
+    await createDirectory(pathTest, testDir);
     // Crear directorios dentro de testDir
     await createDirectorys(pathTestDir, directories)
     // Crear archivos dentro de testDir
@@ -25,7 +25,7 @@ beforeAll( async () => {
 describe('List path content', () => {
     
     test('Should list the contents of the testDir directory', async () => {
-        const response = await api.get(`/${testDirectory}`)
+        const response = await api.get(`/${testDir}`)
             .expect(200);
         const content = response.body.content;
         // Comprobar si se crean los directorios dentro de testDir
@@ -54,7 +54,7 @@ describe('List path content', () => {
     })
 
     test('Should not list a file content', async () => {
-        const pathFile = `${testDirectory}-${directories[1]}-${files[0]}`
+        const pathFile = `${testDir}-${directories[1]}-${files[0]}`
         const response = await api.get(`/${pathFile}`)
             .expect(400)
 
@@ -67,7 +67,7 @@ describe('List path content', () => {
 
 // Ejecuta una acción al terminar TODOS los test
 afterAll( async () => {
-    //Eliminar directorio testDir
-    await deleteDirectory(`${pathTest}/${testDirectory}`)
+    //Eliminar directorio testPath
+    await deleteDirectory(`${pathTest}/${testDir}`)
     server.close();
 })

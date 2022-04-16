@@ -13,7 +13,7 @@
   },
   "scripts": {
     "dev": "nodemon app.js",
-    "test": "NODE_ENV=test jest --verbose --silent /test/pathcontent.test.js",
+    "test": "NODE_ENV=test jest --verbose /test/createdir.test.js",
     "test:watch": "npm run test -- --watch"
   },
   "keywords": [],
