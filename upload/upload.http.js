@@ -1,30 +1,19 @@
-const to = require("../tools/to");
-const validatePath = require("../tools/validatepath");
-const convertPath = require("../tools/convertpath");
-const dir = require("./upload.controller");
+const to = require("../tools/to")
+const upload = require("./upload.controller")
 
+const uploadFiles = async (req, res, next) => {
+  const { files } = req.files
+  const path = req.params.path
 
-const uploadFiles = async (req, res) => {
-    let files = req.files;
-    let pathSent = req.params.path;
+  // Validar si ha cargado un archivo
+  if(!files || Object.keys(files).length === 0)
+    return next({ msg: 'No files uploaded' })
 
-    const pathComplete = convertPath(pathSent);
-    // Validar si ha cargado un archivo
-    if(!files || Object.keys(files).length == 0) {
-        return res.status(400).send({ message: "No files uploaded" });
-    }
+  const [ uploadError, result ] = await to(upload(files, path))
+  if(uploadError) 
+    return next(uploadError)
 
-    // Validar si existe un directorio donde guardar el archivo
-    const [ error, directory ] = await to(validatePath(pathComplete));
-    if(error) {
-        return res.status(400).send(error)
-    } 
- 
-    const [ errorUploadFile, result ] = await to(dir.upload(files.file, directory));
-    if(errorUploadFile) 
-        return res.status(400).send(errorUploadFile);
-
-    res.status(200).send(result);
+  res.status(200).send(result)
 }
 
-exports.uploadFiles = uploadFiles;
+module.exports = uploadFiles

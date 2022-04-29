@@ -5,14 +5,14 @@ const mz = require("mz/fs")
 const createDirectory = (pathDirectory, name) => {
     const pathComplete = path.join(pathDirectory, name)
 
-    return new Promise( async (result,  reject) => {
+    return new Promise((result,  reject) => {
         // Se crea el direcotrio
         fs.promises.mkdir(pathComplete)
             .then( async () => {
                 //Se comprueba si ha sido creado
-                const exists = await mz.exists(pathComplete)
-                if (!exists) 
-                    return reject({msg: 'Directory not created', path: pathComplete}) 
+                // const exists = await mz.exists(pathComplete)
+                // if (!exists) 
+                //     return reject({msg: 'Directory not created', path: pathComplete}) 
 
                 result({ message: 'Directory created successfully', path: pathComplete })
 
@@ -26,14 +26,14 @@ const createDirectory = (pathDirectory, name) => {
 
 const createFile = (pathFile, nameFile, contentFile = '') => {
     const pathComplete = path.join(pathFile, nameFile)
-  
+    
     return new Promise( async (resolve, reject) => {
         const exists = await mz.exists(pathComplete)
         if (exists) 
             return reject({msg: 'The file already exists', path: pathComplete}) 
 
-        fs.writeFile(pathComplete, contentFile, (err) => {
-            if (err) 
+        fs.writeFile(pathComplete, contentFile, (error) => {
+            if (error) 
                 return reject({msg: error, path: pathComplete}) 
             resolve({msg: 'File created successfully', path: pathComplete})
         }) 

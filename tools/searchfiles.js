@@ -15,8 +15,8 @@ const searchFiles = async (path, files) => {
             }
         })  
     }
-    if(exists['files'].length == files.length) {
-        throw({message: 'The file already exists', existing: exists.names})
+    if(exists['files'].length === files.length) {
+        throw({msg: 'The file already exists', path: exists.names})
     }
     return({ exists, newFiles })
 }

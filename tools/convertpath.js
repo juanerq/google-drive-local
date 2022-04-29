@@ -1,7 +1,5 @@
-require('dotenv').config({path: './.env'});
 const basepath = process.env.BASEPATH;
 const path = require("path");
-
 
 const convertPath = (pathSent) => {
     return pathComplete = pathSent 
@@ -9,4 +7,4 @@ const convertPath = (pathSent) => {
         : basepath
 }
 
-module.exports = convertPath;
+module.exports = convertPath

@@ -1,34 +1,31 @@
-const supertest = require("supertest");
-const { app, server } = require("../app");
+const { server } = require("../app")
+const { api } = require('./helper')
 
-const createFile = require("../create/create.controller").createFile;
+const { createFile } = require("../create/create.controller")
 const deleteDirectory = require("../tools/deletedir");
 
-const api = supertest(app);
-require('dotenv').config({path: '../.env'});
-
-const imgPath = process.env.IMGPATH;
+const testPath = process.env.BASEPATH
 
 const files = [
-    `${imgPath}/nezuko.png`,
-    `${imgPath}/arch.png`,
-    `${imgPath}/wallpaper.jpg`,
-    `${imgPath}/katniss.jpg`
+    `${testPath}/city.jpg`,
+    `${testPath}/foxy.jpg`,
+    `${testPath}/nezuko.png`,
+    `${testPath}/springtrap.jpg`
 ]
 
 const testFile = 'testFile.txt'
 
 beforeAll( async () => {
-    await createFile(testFile);
+  await createFile(testPath, testFile)
 })
 
 describe('Upload a new file', () => {
 
-    test('Should upload the test image to testDirectory', async () => {
-        const response = await api.post('/')
-            .attach( 'file', files[0] )
-            .expect( 200 ) 
-        const{ existing, uploaded, message } = response.body
+    test.only('Should upload the test image to testDirectory', async () => {
+        const response = await api.put('/upload/')
+          .attach( 'files', files[0] )
+          .expect( 200 ) 
+        const { existing, uploaded, message } = response.body
 
         expect( message ).toBe( 'Files received' );
         expect( uploaded ).toEqual( [ "nezuko.png" ] );
@@ -36,7 +33,7 @@ describe('Upload a new file', () => {
     })
 
     test('Should only upload files that dont exist', async () => {
-        const requestInstance = api.post('/')
+        const requestInstance = api.put('/')
         
             for(const file of files) {
                 requestInstance.attach('file', file);
@@ -54,7 +51,7 @@ describe('Upload a new file', () => {
     })
 
     test('Should not upload the file that already exists( arch.png )', async () => {
-        const response = await api.post('/')
+        const response = await api.put('/')
             .attach( 'file', files[1] )
             .expect( 400 ) 
         const{ existing, uploaded, message } = response.body
@@ -65,7 +62,7 @@ describe('Upload a new file', () => {
     })
 
     test('Should not upload any file ( the files already exist )', async () => {
-        const requestInstance = api.post('/')
+        const requestInstance = api.put('/')
         
             for(const file of files) {
                 requestInstance.attach('file', file);
@@ -83,7 +80,7 @@ describe('Upload a new file', () => {
 
 
     test('Should return an error for not sending a file', async () => {
-        const content = await api.post('/')
+        const content = await api.put('/')
             .expect( 400 ) 
             
         const { existing, uploaded, message } = content.body;
@@ -94,7 +91,7 @@ describe('Upload a new file', () => {
     })
 
     test('Should not upload the file to an invalid path', async () => {
-        const response = await api.post('/false/')
+        const response = await api.put('/false/')
             .attach( 'file', files[2] )
             .expect( 400 );
         const content = response.body;
@@ -103,7 +100,7 @@ describe('Upload a new file', () => {
     })
 
     test('Should not upload the file to a file path', async () => {
-        const response = await api.post(`/${testFile}`)
+        const response = await api.put(`/${testFile}`)
             .attach( 'file', files[2] )
             .expect( 400 );
         const content = response.body;
@@ -113,11 +110,11 @@ describe('Upload a new file', () => {
 })
 
 afterAll( async () => {
-    const deleteFiles = files.map((f) => {
-        deleteDirectory(f.split('/')[f.split('/').length - 1])
-    })
-    await Promise.all(deleteFiles);
-    await deleteDirectory(testFile);
+    // const deleteFiles = files.map((f) => {
+    //     deleteDirectory(f.split('/')[f.split('/').length - 1])
+    // })
+    // await Promise.all(deleteFiles);
+    // await deleteDirectory(testPath, testFile);
 
     server.close();
 })

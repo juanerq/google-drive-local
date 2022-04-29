@@ -21,7 +21,6 @@ const validatePath = async (pathDirectory) => {
         return(pathDirectory);
     })
 }
-
 // const validatePath = async (pathDirectory) => {
 //     // Si el directorio donde queremos guardar el archivo no existe
 //     const [ notExist ] = await to(fs.promises.access(pathDirectory));
@@ -36,4 +35,6 @@ const validatePath = async (pathDirectory) => {
 //     return(pathDirectory);
 // }
 
-module.exports = validatePath;
+module.exports = { 
+    validatePath
+}

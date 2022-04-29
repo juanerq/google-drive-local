@@ -17,19 +17,21 @@ app.use(express.json(),
 
 const port = process.env.PORT
 
-const upload = require("./upload/upload.router").router
+const upload = require("./upload/upload.router")
 const create = require("./create/create.router").router
 const content = require("./content/content.router")
 const watch = require("./watchvideo/watch.router").router
+const viewImg = require('./viewImg/img.router')
 
 // app.use('/watch', watch)
 
-// app.use('/', upload)
+app.use('/img', viewImg)
+app.use('/upload', upload)
 app.use('/', create)
 app.use('/', content)
 
 app.use((req, res) => {
-    res.status(404).json({ error: 'Not found' })
+    res.status(404).end()
 })
 
 app.use(handleErrors)

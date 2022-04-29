@@ -1,8 +1,9 @@
-const express = require("express");
-const router = express.Router();
-const uploadFilesHttpHandler = require("./upload.http");
+const router = require("express").Router()
+const uploadFilesHttpHandler = require("./upload.http")
+const { validatePathContent } = require('../validators/validators')
+
 
 router.route('/:path?')
-    .put( uploadFilesHttpHandler.uploadFiles );
+  .put( validatePathContent, uploadFilesHttpHandler )
 
-exports.router = router;
+module.exports = router
