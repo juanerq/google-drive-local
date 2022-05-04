@@ -1,0 +1,95 @@
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500&family=Ubuntu:wght@500&display=swap');
+
+
+#upload-files {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  background-color: rgb(255, 255, 255);
+  max-height: 330px;
+  max-width: 350px;
+  border-radius: 8px;
+  overflow:auto;
+}
+
+#upload-files::-webkit-scrollbar {
+  display: none;
+}
+
+.button-upload {
+  display: flex;
+  border-radius: 5px;
+  background-color: #a400f0;
+  margin: 8px;
+  width: 209px;
+}
+
+.button-upload label {
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  padding: 6px 7px;
+  cursor: pointer;
+  color: #fff;
+  border-right: none;
+}
+
+.button-upload label:hover  {
+  background-color: #b411ff;
+}
+
+.button-upload label p {
+  margin-left: 5px;
+  font-weight: 500;
+  font-size: 18px;
+}
+
+.button-upload button {
+  font-family: 'Ubuntu', sans-serif;
+  border: none;
+  color: #321853;
+  font-size: 18px;
+  font-weight: 500;
+  background-color: #ffffff;
+  border-radius: 5px;
+  padding: 0 10px;
+  border: 2px solid #a400f0;
+}
+
+.button-upload button:hover {
+  background-color: #f7f7f7;
+  cursor: pointer;
+}
+
+#upload {
+  display: none;
+}
+
+.file-list {
+  width: 100%;
+}
+
+.uploaded-file {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px  solid rgb(210, 210, 210);
+  height: 30px;
+  padding: 3px;
+}
+
+.uploaded-file img {
+  height: 100%;
+  margin-right: 3px;
+  object-fit: contain;
+}
+
+.uploaded-file p {
+  height: 16px;
+  width: 90%;
+  font-weight: 500;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+}

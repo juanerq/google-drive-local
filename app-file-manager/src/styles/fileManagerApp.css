@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500&family=Ubuntu:wght@500&display=swap');
+
+.container {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   margin: auto;
+   width: 98%;
+}
+
+.container_file_manager {
+    width: 100%;
+    height: 100vh;
+
+}
+
+.form_addpath {
+    margin: 40px 0;
+}
+
+.container_dirs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.button_back {
+    display: flex;
+    align-items: center;
+    border: none;
+    background: none;
+    font-size: 25px;
+    box-shadow: 2px 3px 2px #7700ff31;
+    border-radius:100px;
+    padding: 1px 12px;
+    color: #321853;
+    cursor: pointer;
+    margin: 15px 20px;
+    transition: all 350ms;
+}
+
+.button_back p {
+    font-size: 24px;
+    font-weight: 500;
+    font-family: 'Ubuntu', sans-serif;
+}
+
+.button_back:hover {
+    background-color: #ffffff;
+}
+
+.actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.action-upload-files {
+    font-family: 'Ubuntu', sans-serif;
+    border: none;
+    padding: 10px 12px;
+    background-color: #ffca28;
+    color: #321853;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.action-upload-files:hover {
+    background-color: #ffd558;
+}
