@@ -1,120 +1,130 @@
 const { server } = require("../app")
 const { api } = require('./helper')
 
-const { createFile } = require("../create/create.controller")
-const deleteDirectory = require("../tools/deletedir");
+const { createFile, createDirectory } = require("../create/create.controller")
+const deleteDirectory = require("../tools/deletedir")
 
 const testPath = process.env.BASEPATH
 
 const files = [
-    `${testPath}/city.jpg`,
-    `${testPath}/foxy.jpg`,
-    `${testPath}/nezuko.png`,
-    `${testPath}/springtrap.jpg`
+  `${testPath}/img/city.jpg`,
+  `${testPath}/img/foxy.jpg`,
+  `${testPath}/img/nezuko.png`,
+  `${testPath}/img/springtrap.jpg`
 ]
 
+const imagesName = files.map(img => img.split('/').pop())
+
 const testFile = 'testFile.txt'
+const testDir = 'testDir'
+
+const pathTestDir = `${testPath}/${testDir}/`
 
 beforeAll( async () => {
-  await createFile(testPath, testFile)
+  await createDirectory(testPath, testDir)
+  await createFile(pathTestDir, testFile)
 })
 
 describe('Upload a new file', () => {
 
-    test.only('Should upload the test image to testDirectory', async () => {
-        const response = await api.put('/upload/')
-          .attach( 'files', files[0] )
-          .expect( 200 ) 
-        const { existing, uploaded, message } = response.body
+  test('Should upload the test image to testDir', async () => {
+    const file = files[0]
 
-        expect( message ).toBe( 'Files received' );
-        expect( uploaded ).toEqual( [ "nezuko.png" ] );
-        expect( existing ).toHaveLength( 0 );
-    })
+    const response = await api.put(`/upload/${testDir}`)
+      .attach( 'files', file )
+      .expect( 200 ) 
+    const { existing, uploaded, msg } = response.body
 
-    test('Should only upload files that dont exist', async () => {
-        const requestInstance = api.put('/')
+    const imgName = file.split('/').pop()
+
+    expect( msg ).toBe( 'Files received' )
+    expect( uploaded ).toEqual([ imgName ])
+    expect( existing ).toHaveLength( 0 )
+  })
+
+  test('Should only upload files that dont exist', async () => {
+    const requestInstance = api.put(`/upload/${testDir}`)
+    
+    for(const file of files) {
+      requestInstance.attach('files', file)
+    }
+
+    const response = await requestInstance
+      .expect( 200 ) 
         
-            for(const file of files) {
-                requestInstance.attach('file', file);
-            }
+    const { existing, uploaded, msg } = response.body
 
-        const content = await requestInstance
-            .expect( 200 ) 
-            
-        const { existing, uploaded, message } = content.body
+    const repeatedImg = files[0].split('/').pop()
 
-        expect( message ).toBe( 'Files received' );
-        expect( existing ).toEqual( [ "nezuko.png" ] );
-        expect( uploaded )
-            .toEqual( ["arch.png", "wallpaper.jpg", "katniss.jpg"] )
-    })
+    const restOfImg = imagesName.filter(img => img != repeatedImg)
 
-    test('Should not upload the file that already exists( arch.png )', async () => {
-        const response = await api.put('/')
-            .attach( 'file', files[1] )
-            .expect( 400 ) 
-        const{ existing, uploaded, message } = response.body
+    expect( msg ).toBe( 'Files received' )
+    expect( existing ).toEqual([ repeatedImg ])
+    expect( uploaded ).toEqual( restOfImg )
+  })
 
-        expect( message ).toBe( 'The file already exists' )
-        expect( existing ).toEqual( ["arch.png"] );
-        expect( uploaded ).toEqual( undefined );
-    })
+  test('Should not upload the file that already exists', async () => {
+    const file = files[1]
 
-    test('Should not upload any file ( the files already exist )', async () => {
-        const requestInstance = api.put('/')
+    const response = await api.put(`/upload/${testDir}`)
+      .attach( 'files', file )
+      .expect( 400 ) 
         
-            for(const file of files) {
-                requestInstance.attach('file', file);
-            }
+    const{ error, path } = response.body
 
-        const content = await requestInstance
-            .expect( 400 ) 
-        const { existing, uploaded, message } = content.body
+    const imgName = file.split('/').pop()
 
-        expect( message ).toBe( 'The file already exists' );
-        expect( uploaded ).toEqual( undefined );
-        expect( existing )
-            .toEqual( [ "nezuko.png", "arch.png", "wallpaper.jpg", "katniss.jpg" ] );
-    })
+    expect( error ).toBe( 'The file already exists' )
+    expect( path ).toEqual([ imgName ])
+  })
+
+  test('Should not upload any file ( the files already exist )', async () => {
+    const requestInstance = api.put(`/upload/${testDir}`)
+    
+    for(const file of files) {
+      requestInstance.attach('files', file)
+    }
+
+    const content = await requestInstance
+      .expect( 400 ) 
+    const { error, path } = content.body
+
+    expect( error ).toBe( 'The file already exists' )
+    expect( path ).toEqual( imagesName )
+  })
 
 
-    test('Should return an error for not sending a file', async () => {
-        const content = await api.put('/')
-            .expect( 400 ) 
-            
-        const { existing, uploaded, message } = content.body;
+  test('Should return an error for not sending a file', async () => {
+    const content = await api.put(`/upload/${testDir}`)
+      .expect( 400 ) 
+    const { error } = content.body
 
-        expect( message ).toBe( 'No files uploaded' );
-        expect( uploaded ).toEqual( undefined );
-        expect( existing ).toEqual( undefined );
-    })
+    expect( error ).toBe( 'No files uploaded' )
+  })
 
-    test('Should not upload the file to an invalid path', async () => {
-        const response = await api.put('/false/')
-            .attach( 'file', files[2] )
-            .expect( 400 );
-        const content = response.body;
+  test('Should not upload the file to an invalid path', async () => {
+    const response = await api.put('/upload/false/')
+      .attach( 'file', files[2] )
+      .expect( 400 )
+    const { error, path } = response.body
 
-        expect(content.error).toBe('The directory does not exist');
-    })
+    expect(error).toBe('The directory does not exist')
+    expect(path).toBe(testPath + '/false')
+  })
 
-    test('Should not upload the file to a file path', async () => {
-        const response = await api.put(`/${testFile}`)
-            .attach( 'file', files[2] )
-            .expect( 400 );
-        const content = response.body;
+  test('Should not upload the file to a file path', async () => {
+    const response = await api.put(`/upload/${testDir}-${testFile}`)
+      .attach( 'file', files[2] )
+      .expect( 400 )
+    const { error, path } = response.body
 
-        expect(content.error).toBe('Only directories are supported');
-    })
+    expect(error).toBe('Only directories are supported')
+    expect(path).toBe(pathTestDir + testFile)
+  })
 })
 
 afterAll( async () => {
-    // const deleteFiles = files.map((f) => {
-    //     deleteDirectory(f.split('/')[f.split('/').length - 1])
-    // })
-    // await Promise.all(deleteFiles);
-    // await deleteDirectory(testPath, testFile);
+  await deleteDirectory(pathTestDir)
 
-    server.close();
+  server.close()
 })

@@ -23,7 +23,7 @@ const content = require("./content/content.router")
 const watch = require("./watchvideo/watch.router").router
 const viewImg = require('./viewImg/img.router')
 
-// app.use('/watch', watch)
+app.use('/watch', watch)
 
 app.use('/img', viewImg)
 app.use('/upload', upload)

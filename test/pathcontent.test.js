@@ -4,22 +4,22 @@ const { dirTestContent, api, createDirectorys, createFiles } = require('./helper
 const { createDirectory } = require("../create/create.controller");
 const deleteDirectory = require("../tools/deletedir");
 
-const pathTest = process.env.BASEPATH
+const testPath = process.env.BASEPATH
 
 const testDir = 'testPath'; 
-const pathTestDir = `${pathTest}/${testDir}/`
+const testPathDir = `${testPath}/${testDir}/`
 
 const directories = [ 'dir_1', 'dir_2', 'dir_3', 'dir_4' ];
 const files = [ 'file_1.txt', 'file_2.txt', 'file_3.txt', 'file_4.txt' ];
 
 beforeAll( async () => {
-    await deleteDirectory(`${pathTest}/${testDir}`)
+    await deleteDirectory(`${testPath}/${testDir}`)
     // Crear directorio testDir
-    await createDirectory(pathTest, testDir);
+    await createDirectory(testPath, testDir);
     // Crear directorios dentro de testDir
-    await createDirectorys(pathTestDir, directories)
+    await createDirectorys(testPathDir, directories)
     // Crear archivos dentro de testDir
-    await createFiles(pathTestDir + directories[1], files)
+    await createFiles(testPathDir + directories[1], files)
 })
 
 describe('List path content', () => {
@@ -68,6 +68,6 @@ describe('List path content', () => {
 // Ejecuta una acción al terminar TODOS los test
 afterAll( async () => {
     //Eliminar directorio testPath
-    await deleteDirectory(`${pathTest}/${testDir}`)
+    await deleteDirectory(`${testPath}/${testDir}`)
     server.close();
 })
